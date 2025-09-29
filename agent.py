@@ -34,20 +34,20 @@ class Agent:
         self.conn.close()
     
     def execute(self, getSqlFromQuestionEngineeredPrompt):
-        try:
-            sqlSyntaxResponse = self.getChatGptResponse(getSqlFromQuestionEngineeredPrompt)
-            sqlSyntaxResponse = self.getJustSql(sqlSyntaxResponse)
-            queryRawResponse = str(agent.executeSql(sqlSyntaxResponse))
-            friendlyResultsPrompt = "I asked a question: \"" + question +"\" and I queried this database " + self.schemaScript + " with this query " + sqlSyntaxResponse + ". The query returned the results data: \""+queryRawResponse+"\". Could you concisely answer my question using the results data?"
-            friendlyResponse = self.getChatGptResponse(friendlyResultsPrompt)
-            return [
-                sqlSyntaxResponse,
-                queryRawResponse,
-                friendlyResponse
-            ]
-        except Exception as err:
-            error = str(err)
-            print(error)
+        sqlSyntaxResponse = self.getChatGptResponse(getSqlFromQuestionEngineeredPrompt)
+        sqlSyntaxResponse = self.getJustSql(sqlSyntaxResponse)
+        print("SQL Syntax Response:")
+        print(sqlSyntaxResponse)
+        queryRawResponse = str(agent.executeSql(sqlSyntaxResponse))
+        print("Query Raw Response:")
+        print(queryRawResponse)
+        friendlyResultsPrompt = "I asked a question: \"" + question +"\" and I queried this database " + self.schemaScript + " with this query " + sqlSyntaxResponse + ". The query returned the results data: \""+queryRawResponse+"\". Could you concisely answer my question using the results data?"
+        friendlyResponse = self.getChatGptResponse(friendlyResultsPrompt)
+        return [
+            sqlSyntaxResponse,
+            queryRawResponse,
+            friendlyResponse
+        ]
 
     def executeSql(self, sqlStatement):
         return self.cursor.execute(sqlStatement).fetchall()
@@ -97,8 +97,10 @@ strategies = {
 questions = [
     "What is the highest rated game?",
     "What is the highest rated game from verified purchasers?",
-    "Who has purchased the most Action games?",
-    "What games have the most tags?"
+    "Who has purchased the most action games?",
+    "What games have the most tags?",
+    "What game has generated the most revenue?",
+    "What genre receives the best reviews?"
 ]
 
 
@@ -116,10 +118,6 @@ for strategy in strategies:
         try:
             getSqlFromQuestionEngineeredPrompt = strategies[strategy] + " " + question
             [sqlSyntaxResponse, queryRawResponse, friendlyResponse] = agent.execute(getSqlFromQuestionEngineeredPrompt)
-            print("SQL Syntax Response:")
-            print(sqlSyntaxResponse)
-            print("Query Raw Response:")
-            print(queryRawResponse)
             print(friendlyResponse)
         except Exception as err:
             error = str(err)

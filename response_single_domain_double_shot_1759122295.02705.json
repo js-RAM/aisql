@@ -5,29 +5,43 @@
     {
       "question": "What is the highest rated game?",
       "sql": "\nSELECT g.title, AVG(r.rating) AS average_rating\nFROM game g\nJOIN review r ON g.game_id = r.game_id\nGROUP BY g.game_id\nORDER BY average_rating DESC\nLIMIT 1;\n",
-      "queryRawResponse": "[('Space Invaders', 5.0)]",
-      "friendlyResponse": "The highest rated game is \"Space Invaders\" with an average rating of 5.0.",
+      "queryRawResponse": "[('Space Invaders', 4.0)]",
+      "friendlyResponse": "The highest rated game is \"Space Invaders\" with an average rating of 4.0.",
       "error": "None"
     },
     {
       "question": "What is the highest rated game from verified purchasers?",
-      "sql": "\nSELECT g.title, AVG(r.rating) AS average_rating\nFROM game g\nJOIN purchase p ON g.game_id = p.game_id\nJOIN review r ON p.person_id = r.person_id AND p.game_id = r.game_id\nGROUP BY g.game_id\nORDER BY average_rating DESC\nLIMIT 1;\n",
-      "queryRawResponse": "[('Space Invaders', 5.0)]",
-      "friendlyResponse": "The highest rated game from verified purchasers is \"Space Invaders\" with an average rating of 5.0.",
+      "sql": "\nSELECT g.title, AVG(r.rating) AS average_rating\nFROM game g\nJOIN review r ON g.game_id = r.game_id\nJOIN purchase p ON r.person_id = p.person_id AND r.game_id = p.game_id\nGROUP BY g.game_id\nORDER BY average_rating DESC\nLIMIT 1;\n",
+      "queryRawResponse": "[('Battle Arena', 5.0)]",
+      "friendlyResponse": "The highest rated game from verified purchasers is \"Battle Arena\" with an average rating of 5.0.",
       "error": "None"
     },
     {
-      "question": "Who has purchased the most Action games?",
-      "sql": "\nSELECT p.name, COUNT(*) AS purchase_count\nFROM person p\nJOIN purchase pu ON p.person_id = pu.person_id\nJOIN game g ON pu.game_id = g.game_id\nJOIN game_tag gt ON g.game_id = gt.game_id\nJOIN tag t ON gt.tag_id = t.tag_id\nWHERE t.name = 'Action'\nGROUP BY p.person_id\nORDER BY purchase_count DESC\nLIMIT 1;\n",
-      "queryRawResponse": "[('Charlie', 1)]",
-      "friendlyResponse": "Charlie has purchased the most Action games, with a total of 1 purchase.",
+      "question": "Who has purchased the most action games?",
+      "sql": "\nSELECT p.name, COUNT(*) as purchase_count\nFROM person p\nJOIN purchase pu ON p.person_id = pu.person_id\nJOIN game_tag gt ON pu.game_id = gt.game_id\nJOIN tag t ON gt.tag_id = t.tag_id\nWHERE t.name = 'action'\nGROUP BY p.person_id\nORDER BY purchase_count DESC\nLIMIT 1;\n",
+      "queryRawResponse": "[]",
+      "friendlyResponse": "Based on the query results, no one has purchased any games tagged as \"action.\" Therefore, there is no person who has purchased the most action games.",
       "error": "None"
     },
     {
       "question": "What games have the most tags?",
       "sql": "\nSELECT g.title, COUNT(gt.tag_id) AS tag_count\nFROM game g\nLEFT JOIN game_tag gt ON g.game_id = gt.game_id\nGROUP BY g.game_id\nORDER BY tag_count DESC\nLIMIT 1;\n",
       "queryRawResponse": "[('Space Invaders', 2)]",
-      "friendlyResponse": "The game \"Space Invaders\" has the most tags, with a total of 2 tags.",
+      "friendlyResponse": "The game with the most tags is \"Space Invaders,\" which has 2 tags.",
+      "error": "None"
+    },
+    {
+      "question": "What game has generated the most revenue?",
+      "sql": "\nSELECT g.title, SUM(g.price) AS total_revenue\nFROM game g\nJOIN purchase p ON g.game_id = p.game_id\nGROUP BY g.game_id\nORDER BY total_revenue DESC\nLIMIT 1;\n",
+      "queryRawResponse": "[('Mystic Quest', 59.98)]",
+      "friendlyResponse": "The game that has generated the most revenue is \"Mystic Quest,\" with a total revenue of $59.98.",
+      "error": "None"
+    },
+    {
+      "question": "What genre receives the best reviews?",
+      "sql": "\nSELECT t.name, AVG(r.rating) AS average_rating\nFROM tag t\nJOIN game_tag gt ON t.tag_id = gt.tag_id\nJOIN review r ON gt.game_id = r.game_id\nGROUP BY t.name\nORDER BY average_rating DESC\nLIMIT 1;\n",
+      "queryRawResponse": "[('Retro', 4.0)]",
+      "friendlyResponse": "The genre that receives the best reviews is \"Retro\" with an average rating of 4.0.",
       "error": "None"
     }
   ]

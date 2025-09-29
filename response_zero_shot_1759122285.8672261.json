@@ -1,0 +1,48 @@
+{
+  "strategy": "zero_shot",
+  "prompt_prefix": "create table person (\n    person_id integer primary key,\n    name varchar(20) not null,\n    email varchar(20) not null,\n    join_date date not null\n);\n\ncreate table game (\n    game_id integer primary key,\n    title varchar,\n    price decimal(5,2)\n);\n\ncreate table purchase (\n    purchase_id integer primary key,\n    game_id integer not null,\n    person_id not null,\n    purchase_date date,\n    foreign key (person_id) references person (person_id),\n    foreign key (game_id) references game (game_id)\n);\n\ncreate table review (\n    review_id integer primary key,\n    person_id integer not null,\n    game_id integer not null,\n    comment text,\n    rating smallint not null,\n    timestamp datetime,\n    foreign key (person_id) references person (person_id),\n    foreign key (game_id) references game (game_id)\n);\n\ncreate table tag (\n    tag_id integer primary key,\n    name varchar\n);\n\ncreate table game_tag (\n    game_id integer not null,\n    tag_id integer not null,\n    primary key (game_id, tag_id)\n); Give me a sqlite select statement that answers the question. Only respond with sqlite syntax. If there is an error do not explain it!",
+  "questionResults": [
+    {
+      "question": "What is the highest rated game?",
+      "sql": "\nSELECT g.title, AVG(r.rating) AS average_rating\nFROM game g\nJOIN review r ON g.game_id = r.game_id\nGROUP BY g.game_id\nORDER BY average_rating DESC\nLIMIT 1;\n",
+      "queryRawResponse": "[('Space Invaders', 4.0)]",
+      "friendlyResponse": "The highest-rated game is \"Space Invaders\" with an average rating of 4.0.",
+      "error": "None"
+    },
+    {
+      "question": "What is the highest rated game from verified purchasers?",
+      "sql": "\nSELECT g.title, AVG(r.rating) as average_rating\nFROM game g\nJOIN purchase p ON g.game_id = p.game_id\nJOIN review r ON p.person_id = r.person_id AND p.game_id = r.game_id\nGROUP BY g.game_id\nORDER BY average_rating DESC\nLIMIT 1;\n",
+      "queryRawResponse": "[('Battle Arena', 5.0)]",
+      "friendlyResponse": "The highest-rated game from verified purchasers is \"Battle Arena,\" with an average rating of 5.0.",
+      "error": "None"
+    },
+    {
+      "question": "Who has purchased the most action games?",
+      "sql": "\nSELECT p.name\nFROM purchase pu\nJOIN person p ON pu.person_id = p.person_id\nJOIN game_tag gt ON pu.game_id = gt.game_id\nJOIN tag t ON gt.tag_id = t.tag_id\nWHERE t.name = 'action'\nGROUP BY p.person_id\nORDER BY COUNT(*) DESC\nLIMIT 1;\n",
+      "queryRawResponse": "[]",
+      "friendlyResponse": "Based on the query and the empty results data returned, it appears that no person in your database has purchased any action games.",
+      "error": "None"
+    },
+    {
+      "question": "What games have the most tags?",
+      "sql": "\nSELECT g.title, COUNT(gt.tag_id) AS tag_count\nFROM game g\nJOIN game_tag gt ON g.game_id = gt.game_id\nGROUP BY g.game_id\nORDER BY tag_count DESC\nLIMIT 1;\n",
+      "queryRawResponse": "[('Space Invaders', 2)]",
+      "friendlyResponse": "The game with the most tags in your database is \"Space Invaders,\" which has 2 tags.",
+      "error": "None"
+    },
+    {
+      "question": "What game has generated the most revenue?",
+      "sql": "\nSELECT game.title, SUM(game.price) AS total_revenue\nFROM purchase\nJOIN game ON purchase.game_id = game.game_id\nGROUP BY game.game_id\nORDER BY total_revenue DESC\nLIMIT 1;\n",
+      "queryRawResponse": "[('Mystic Quest', 59.98)]",
+      "friendlyResponse": "The game that has generated the most revenue is \"Mystic Quest,\" with a total revenue of $59.98.",
+      "error": "None"
+    },
+    {
+      "question": "What genre receives the best reviews?",
+      "sql": "\nSELECT t.name AS genre, AVG(r.rating) AS average_rating\nFROM review r\nJOIN game g ON r.game_id = g.game_id\nJOIN game_tag gt ON g.game_id = gt.game_id\nJOIN tag t ON gt.tag_id = t.tag_id\nGROUP BY t.name\nORDER BY average_rating DESC\nLIMIT 1;\n",
+      "queryRawResponse": "[('Retro', 4.0)]",
+      "friendlyResponse": "The genre that receives the best reviews is \"Retro,\" with an average rating of 4.0.",
+      "error": "None"
+    }
+  ]
+}

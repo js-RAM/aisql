@@ -15,7 +15,7 @@ INSERT INTO purchase (purchase_id, game_id, person_id, purchase_date) VALUES
 (4, 3, 3, '2023-05-01');
 
 INSERT INTO review (review_id, person_id, game_id, comment, rating, timestamp) VALUES
-(1, 1, 1, 'Really fun classic!', 5, '2023-04-02 14:30:00'),
+(1, 1, 1, 'Really fun classic!', 4, '2023-04-02 14:30:00'),
 (5, 1, 2, "Not Great", 3, '2023-04-02 14:30:00'),
 (6, 1, 3, "Terrible!", 1, '2023-04-02 14:30:00'),
 (2, 1, 2, 'Pretty good, but short.', 4, '2023-04-11 16:45:00'),
