@@ -1,4 +1,6 @@
 # aisql
+<img width="3582" height="876" alt="drawSQL-image-export-2025-09-29" src="https://github.com/user-attachments/assets/3e8b164f-790d-4168-820a-b26eb27283b4" />
+
 ## Description
 Created a games review database that tracks customers, their reviews, and verified purchases. Also allows tags to be linked to games.
 ## Working Example:<br>
