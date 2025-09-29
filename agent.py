@@ -10,6 +10,7 @@ def getPath(fname):
 
 class Agent:
     def __init__(self, schemaPath, dataPath):
+        databasePath = getPath("db.sqlite")
         if (os.path.exists(databasePath)):
             os.remove(databasePath)
         self.conn = sqlite3.connect(databasePath)
@@ -28,11 +29,15 @@ class Agent:
             config = json.load(configFile)
         self.openAiClient = OpenAI(api_key = config["openai"])
     
+    def __del__(self):
+        self.cursor.close()
+        self.conn.close()
+    
     def execute(self, getSqlFromQuestionEngineeredPrompt):
         try:
             sqlSyntaxResponse = self.getChatGptResponse(getSqlFromQuestionEngineeredPrompt)
             sqlSyntaxResponse = self.getJustSql(sqlSyntaxResponse)
-            queryRawResponse = str(agent.execute(sqlSyntaxResponse))
+            queryRawResponse = str(agent.executeSql(sqlSyntaxResponse))
             friendlyResultsPrompt = "I asked a question: \"" + question +"\" and I queried this database " + self.schemaScript + " with this query " + sqlSyntaxResponse + ". The query returned the results data: \""+queryRawResponse+"\". Could you concisely answer my question using the results data?"
             friendlyResponse = self.getChatGptResponse(friendlyResultsPrompt)
             return [
@@ -45,7 +50,7 @@ class Agent:
             print(error)
 
     def executeSql(self, sqlStatement):
-        self.cursor.execute(sqlStatement).fetchAll()
+        return self.cursor.execute(sqlStatement).fetchall()
 
     def getChatGptResponse(self, content):
         stream = self.openAiClient.chat.completions.create(
@@ -62,7 +67,7 @@ class Agent:
         result = "".join(responseList)
         return result
 
-    def getJustSql(value):
+    def getJustSql(self, value):
         gptStartSqlMarker = "```sql"
         gptEndSqlMarker = "```"
         if gptStartSqlMarker in value:
@@ -75,7 +80,6 @@ class Agent:
     def getSchemaScript(self):
         return self.schemaScript
     
-databasePath = getPath("db.sqlite")
 schemaPath = getPath("schema.sql")
 dataPath = getPath("data.sql")
 
@@ -86,12 +90,15 @@ sqlOnly = " Give me a sqlite select statement that answers the question. Only re
 strategies = {
     "zero_shot": schemaScript + sqlOnly,
     "single_domain_double_shot": (schemaScript +
-        " Who doesn't have a way for us to text them? " +
-        " \nSELECT p.person_id, p.name\nFROM person p\nLEFT JOIN phone ph ON p.person_id = ph.person_id AND ph.can_recieve_sms = 1\nWHERE ph.phone_id IS NULL;\n " +
+        " What is the highest rated game? " +
+        " \nSELECT g.title, AVG(r.rating) AS average_rating\nFROM game g\nLEFT JOIN review r ON g.game_id = r.game_id\nGROUP BY g.game_id\nORDER BY average_rating DESC\nLimit 1;\n " +
         sqlOnly)
 }
 questions = [
-    
+    "What is the highest rated game?",
+    "What is the highest rated game from verified purchasers?",
+    "Who has purchased the most Action games?",
+    "What games have the most tags?"
 ]
 
 

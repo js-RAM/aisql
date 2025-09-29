@@ -1,0 +1,34 @@
+{
+  "strategy": "single_domain_double_shot",
+  "prompt_prefix": "create table person (\n    person_id integer primary key,\n    name varchar(20) not null,\n    email varchar(20) not null,\n    join_date date not null\n);\n\ncreate table game (\n    game_id integer primary key,\n    title varchar,\n    price decimal(5,2)\n);\n\ncreate table purchase (\n    purchase_id integer primary key,\n    game_id integer not null,\n    person_id not null,\n    purchase_date date,\n    foreign key (person_id) references person (person_id),\n    foreign key (game_id) references game (game_id)\n);\n\ncreate table review (\n    review_id integer primary key,\n    person_id integer not null,\n    game_id integer not null,\n    comment text,\n    rating smallint not null,\n    timestamp datetime,\n    foreign key (person_id) references person (person_id),\n    foreign key (game_id) references game (game_id)\n);\n\ncreate table tag (\n    tag_id integer primary key,\n    name varchar\n);\n\ncreate table game_tag (\n    game_id integer not null,\n    tag_id integer not null,\n    primary key (game_id, tag_id)\n); What is the highest rated game?  \nSELECT g.title, AVG(r.rating) AS average_rating\nFROM game g\nLEFT JOIN review r ON g.game_id = r.game_id\nGROUP BY g.game_id\nORDER BY average_rating DESC\nLimit 1;\n  Give me a sqlite select statement that answers the question. Only respond with sqlite syntax. If there is an error do not explain it!",
+  "questionResults": [
+    {
+      "question": "What is the highest rated game?",
+      "sql": "\nSELECT g.title, AVG(r.rating) AS average_rating\nFROM game g\nJOIN review r ON g.game_id = r.game_id\nGROUP BY g.game_id\nORDER BY average_rating DESC\nLIMIT 1;\n",
+      "queryRawResponse": "[('Space Invaders', 5.0)]",
+      "friendlyResponse": "The highest rated game is \"Space Invaders\" with an average rating of 5.0.",
+      "error": "None"
+    },
+    {
+      "question": "What is the highest rated game from verified purchasers?",
+      "sql": "\nSELECT g.title, AVG(r.rating) AS average_rating\nFROM game g\nJOIN purchase p ON g.game_id = p.game_id\nJOIN review r ON p.person_id = r.person_id AND p.game_id = r.game_id\nGROUP BY g.game_id\nORDER BY average_rating DESC\nLIMIT 1;\n",
+      "queryRawResponse": "[('Space Invaders', 5.0)]",
+      "friendlyResponse": "The highest rated game from verified purchasers is \"Space Invaders\" with an average rating of 5.0.",
+      "error": "None"
+    },
+    {
+      "question": "Who has purchased the most Action games?",
+      "sql": "\nSELECT p.name, COUNT(*) AS purchase_count\nFROM person p\nJOIN purchase pu ON p.person_id = pu.person_id\nJOIN game g ON pu.game_id = g.game_id\nJOIN game_tag gt ON g.game_id = gt.game_id\nJOIN tag t ON gt.tag_id = t.tag_id\nWHERE t.name = 'Action'\nGROUP BY p.person_id\nORDER BY purchase_count DESC\nLIMIT 1;\n",
+      "queryRawResponse": "[('Charlie', 1)]",
+      "friendlyResponse": "Charlie has purchased the most Action games, with a total of 1 purchase.",
+      "error": "None"
+    },
+    {
+      "question": "What games have the most tags?",
+      "sql": "\nSELECT g.title, COUNT(gt.tag_id) AS tag_count\nFROM game g\nLEFT JOIN game_tag gt ON g.game_id = gt.game_id\nGROUP BY g.game_id\nORDER BY tag_count DESC\nLIMIT 1;\n",
+      "queryRawResponse": "[('Space Invaders', 2)]",
+      "friendlyResponse": "The game \"Space Invaders\" has the most tags, with a total of 2 tags.",
+      "error": "None"
+    }
+  ]
+}
